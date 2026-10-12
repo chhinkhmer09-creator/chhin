@@ -1,0 +1,6 @@
+{
+  "name": "Khmer Video to SRT",
+  "description": "បម្លែងវីដេអូទៅជាចំណងជើងរង SRT ភាសាខ្មែរដោយស្វ័យប្រវត្តិជាមួយ AI សម្រាប់ VoiceRTool និង Dubbing (AI Video to Khmer Subtitles & Dubbing)",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
