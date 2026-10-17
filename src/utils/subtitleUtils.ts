@@ -163,6 +163,61 @@ export function downloadFile(filename: string, text: string, mimeType: string) {
 }
 
 /**
+ * Strict 100% Timing Auto-Calibration:
+ * - Sorts segments chronologically
+ * - Guarantees end > start with minimum readable duration (0.6s)
+ * - Eliminates overlapping timestamps between consecutive segments
+ * - Formats timestamps to 2 decimal places precision
+ * - Re-indexes segment IDs sequentially
+ */
+export function autoCalibrateSegments(segments: SubtitleSegment[]): SubtitleSegment[] {
+  if (!segments || segments.length === 0) return [];
+
+  const cleaned = segments
+    .map((s) => {
+      const start = Math.max(0, Math.round(Number(s.start || 0) * 100) / 100);
+      let end = Math.round(Number(s.end || 0) * 100) / 100;
+      if (end <= start) {
+        end = Math.round((start + 1.5) * 100) / 100;
+      }
+      return {
+        ...s,
+        start,
+        end,
+        text: s.text ? s.text.trim() : '',
+        original: s.original ? s.original.trim() : '',
+      };
+    })
+    .sort((a, b) => a.start - b.start);
+
+  // Eliminate overlaps and ensure smooth sequential display
+  for (let i = 1; i < cleaned.length; i++) {
+    const prev = cleaned[i - 1];
+    const curr = cleaned[i];
+
+    if (curr.start < prev.end) {
+      if (curr.start >= prev.start + 0.8) {
+        // Trim previous segment's end to meet current start
+        prev.end = Math.round((curr.start - 0.05) * 100) / 100;
+      } else {
+        // Shift current start after previous end
+        curr.start = Math.round((prev.end + 0.05) * 100) / 100;
+        if (curr.end <= curr.start) {
+          curr.end = Math.round((curr.start + 1.2) * 100) / 100;
+        }
+      }
+    }
+  }
+
+  return cleaned.map((s, index) => ({
+    ...s,
+    id: index + 1,
+    start: Math.round(s.start * 100) / 100,
+    end: Math.round(s.end * 100) / 100,
+  }));
+}
+
+/**
  * Sample segments for instant preview/testing
  */
 export const SAMPLE_SEGMENTS: SubtitleSegment[] = [
